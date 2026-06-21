@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — Support Desk{% endblock %}
+
+{% block content %}
+<section class="dash-head">
+  <div>
+    <p class="eyebrow eyebrow-admin">Khush Amdeed, {{ current_user.name }}</p>
+    <h2>Tamam Tickets</h2>
+  </div>
+</section>
+
+<div class="filter-row">
+  <a href="{{ url_for('admin_dashboard', status='all') }}" class="filter-chip {{ 'active' if status_filter == 'all' }}">Tamam <span>{{ counts['all'] }}</span></a>
+  <a href="{{ url_for('admin_dashboard', status='Open') }}" class="filter-chip {{ 'active' if status_filter == 'Open' }}">Open <span>{{ counts['Open'] }}</span></a>
+  <a href="{{ url_for('admin_dashboard', status='Answered') }}" class="filter-chip {{ 'active' if status_filter == 'Answered' }}">Answered <span>{{ counts['Answered'] }}</span></a>
+  <a href="{{ url_for('admin_dashboard', status='Closed') }}" class="filter-chip {{ 'active' if status_filter == 'Closed' }}">Closed <span>{{ counts['Closed'] }}</span></a>
+</div>
+
+{% if tickets %}
+  <div class="ticket-list">
+    {% for t in tickets %}
+      <a href="{{ url_for('view_ticket', ticket_id=t.id) }}" class="ticket-row">
+        <div class="ticket-row-main">
+          <span class="status-dot status-{{ t.status|lower }}"></span>
+          <div>
+            <p class="ticket-subject">{{ t.subject }}</p>
+            <p class="ticket-snippet">{{ t.student.name }} &middot; {{ t.message[:70] }}{% if t.message|length > 70 %}&hellip;{% endif %}</p>
+          </div>
+        </div>
+        <div class="ticket-row-meta">
+          {% if t.priority == 'Urgent' %}<span class="badge badge-urgent">Urgent</span>{% endif %}
+          <span class="badge badge-status status-badge-{{ t.status|lower }}">{{ t.status }}</span>
+          <span class="ticket-date">{{ t.updated_at.strftime('%d %b, %I:%M %p') }}</span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <p class="empty-title">Is filter mein koi ticket nahi hai</p>
+    <p class="empty-sub">Jab koi student sawal poochega, yahan nazar aayega.</p>
+  </div>
+{% endif %}
+{% endblock %}

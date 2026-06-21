@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}{{ ticket.subject }} — Support Desk{% endblock %}
+
+{% block content %}
+<section class="ticket-detail">
+
+  <a href="{{ url_for('admin_dashboard') if is_admin else url_for('student_dashboard') }}" class="back-link">&larr; Wapas</a>
+
+  <div class="ticket-header">
+    <div>
+      <div class="ticket-header-tags">
+        {% if ticket.priority == 'Urgent' %}<span class="badge badge-urgent">Urgent</span>{% endif %}
+        <span class="badge badge-status status-badge-{{ ticket.status|lower }}">{{ ticket.status }}</span>
+      </div>
+      <h2>{{ ticket.subject }}</h2>
+      <p class="ticket-header-meta">
+        {% if is_admin %}{{ ticket.student.name }} ({{ ticket.student.email }}) &middot; {% endif %}
+        Shuru hua: {{ ticket.created_at.strftime('%d %b %Y, %I:%M %p') }}
+      </p>
+    </div>
+
+    <div class="ticket-header-actions">
+      {% if ticket.status != 'Closed' %}
+        <form method="POST" action="{{ url_for('close_ticket', ticket_id=ticket.id) }}">
+          <button type="submit" class="btn btn-ghost btn-small">Ticket Band Karein</button>
+        </form>
+      {% else %}
+        <form method="POST" action="{{ url_for('reopen_ticket', ticket_id=ticket.id) }}">
+          <button type="submit" class="btn btn-ghost btn-small">Dobara Kholein</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="thread">
+    <div class="thread-msg thread-msg-original">
+      <div class="thread-msg-head">
+        <span class="thread-avatar">{{ ticket.student.name[0]|upper }}</span>
+        <div>
+          <p class="thread-author">{{ ticket.student.name }}</p>
+          <p class="thread-time">{{ ticket.created_at.strftime('%d %b, %I:%M %p') }}</p>
+        </div>
+      </div>
+      <p class="thread-body">{{ ticket.message }}</p>
+    </div>
+
+    {% for r in ticket.replies %}
+      <div class="thread-msg {{ 'thread-msg-admin' if r.is_admin_reply else 'thread-msg-student' }}">
+        <div class="thread-msg-head">
+          <span class="thread-avatar {{ 'thread-avatar-admin' if r.is_admin_reply }}">{{ r.author_name[0]|upper }}</span>
+          <div>
+            <p class="thread-author">{{ r.author_name }} {% if r.is_admin_reply %}<span class="staff-tag">Support</span>{% endif %}</p>
+            <p class="thread-time">{{ r.created_at.strftime('%d %b, %I:%M %p') }}</p>
+          </div>
+        </div>
+        <p class="thread-body">{{ r.message }}</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if ticket.status != 'Closed' %}
+    <form method="POST" class="reply-form">
+      <label for="message">{{ 'Jawab likhein' if is_admin else 'Aur kuch poochna hai?' }}</label>
+      <textarea id="message" name="message" rows="4" placeholder="{{ 'Apna jawab yahan likhein...' if is_admin else 'Apna paigham yahan likhein...' }}" required></textarea>
+      <button type="submit" class="btn {{ 'btn-admin' if is_admin else 'btn-primary' }}">
+        {{ 'Jawab Bhejein' if is_admin else 'Bhejein' }}
+      </button>
+    </form>
+  {% else %}
+    <p class="closed-note">Ye ticket band ho chuka hai. Agar dobara baat karni ho to "Dobara Kholein" par click karein.</p>
+  {% endif %}
+
+</section>
+{% endblock %}

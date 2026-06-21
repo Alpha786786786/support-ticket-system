@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Admin Login — Support Desk{% endblock %}
+
+{% block content %}
+<section class="auth-wrap">
+  <div class="auth-card auth-card-admin">
+    <p class="eyebrow eyebrow-admin">Support Team</p>
+    <h2>Admin Login</h2>
+    <p class="auth-sub">Tickets dekhne aur jawab dene ke liye login karein.</p>
+
+    <form method="POST" class="form">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="admin@example.com" required autofocus>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Aap ka password" required>
+
+      <button type="submit" class="btn btn-admin btn-block">Login</button>
+    </form>
+
+    <p class="auth-note">Admin account command line se banaya jata hai. Setup instructions dekhein.</p>
+  </div>
+</section>
+{% endblock %}

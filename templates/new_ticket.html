@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Naya Sawal — Support Desk{% endblock %}
+
+{% block content %}
+<section class="auth-wrap">
+  <div class="auth-card form-card-wide">
+    <p class="eyebrow">Naya Sawal</p>
+    <h2>Apna sawal likhein</h2>
+    <p class="auth-sub">Jitni tafseel dengay, utna behtar aur jald jawab milay ga.</p>
+
+    <form method="POST" class="form">
+      <label for="subject">Subject</label>
+      <input type="text" id="subject" name="subject" placeholder="Misal: Fee jama karwane mein masla" required>
+
+      <label for="priority">Ahmiyat</label>
+      <select id="priority" name="priority">
+        <option value="Normal" selected>Normal</option>
+        <option value="Urgent">Urgent</option>
+      </select>
+
+      <label for="message">Sawal / Tafseel</label>
+      <textarea id="message" name="message" rows="6" placeholder="Apna sawal yahan tafseel se likhein..." required></textarea>
+
+      <button type="submit" class="btn btn-primary btn-block">Sawal Bhejein</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

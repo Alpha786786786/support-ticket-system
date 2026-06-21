@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Student Login — Support Desk{% endblock %}
+
+{% block content %}
+<section class="auth-wrap">
+  <div class="auth-card">
+    <p class="eyebrow">Student</p>
+    <h2>Login karein</h2>
+    <p class="auth-sub">Apne sawalat aur jawabaat dekhne ke liye login karein.</p>
+
+    <form method="POST" class="form">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="aap@example.com" required autofocus>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Aap ka password" required>
+
+      <button type="submit" class="btn btn-primary btn-block">Login</button>
+    </form>
+
+    <p class="auth-switch">Account nahi hai? <a href="{{ url_for('student_signup') }}">Naya account banayein</a></p>
+  </div>
+</section>
+{% endblock %}

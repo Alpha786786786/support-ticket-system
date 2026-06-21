@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Account Banayein — Support Desk{% endblock %}
+
+{% block content %}
+<section class="auth-wrap">
+  <div class="auth-card">
+    <p class="eyebrow">Student</p>
+    <h2>Naya account banayein</h2>
+    <p class="auth-sub">Sawal poochne ke liye account zaroori hai.</p>
+
+    <form method="POST" class="form">
+      <label for="name">Naam</label>
+      <input type="text" id="name" name="name" placeholder="Aap ka pura naam" required>
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="aap@example.com" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Kam az kam 6 characters" required minlength="6">
+
+      <button type="submit" class="btn btn-primary btn-block">Account Banayein</button>
+    </form>
+
+    <p class="auth-switch">Pehle se account hai? <a href="{{ url_for('student_login') }}">Login karein</a></p>
+  </div>
+</section>
+{% endblock %}

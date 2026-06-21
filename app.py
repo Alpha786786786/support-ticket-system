@@ -378,6 +378,44 @@ def not_found(e):
 
 
 # ---------------------------------------------------------------------------
+# One-time web-based admin setup (for hosts without Shell access, e.g. Render free tier)
+# ---------------------------------------------------------------------------
+
+@app.route('/setup-admin', methods=['GET', 'POST'])
+def setup_admin():
+    # Safety: this page only works if there is NOT already an admin account.
+    # Once one admin exists, this page disables itself automatically.
+    if Admin.query.first() is not None:
+        return render_template(
+            'error.html', code=403,
+            message='Admin setup is already complete. This page is now disabled.'
+        ), 403
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+
+        if not name or not email or not password:
+            flash('Please fill in all fields.', 'error')
+            return render_template('setup_admin.html')
+
+        if len(password) < 6:
+            flash('Password must be at least 6 characters.', 'error')
+            return render_template('setup_admin.html')
+
+        admin = Admin(name=name, email=email)
+        admin.set_password(password)
+        db.session.add(admin)
+        db.session.commit()
+
+        flash('Admin account created. You can now log in below.', 'success')
+        return redirect(url_for('admin_login'))
+
+    return render_template('setup_admin.html')
+
+
+# ---------------------------------------------------------------------------
 # CLI helper to create the first admin account
 # ---------------------------------------------------------------------------
 

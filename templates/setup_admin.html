@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Admin Setup — Support Desk{% endblock %}
+
+{% block content %}
+<section class="auth-wrap">
+  <div class="auth-card auth-card-admin">
+    <p class="eyebrow eyebrow-admin">One-Time Setup</p>
+    <h2>Create the Admin Account</h2>
+    <p class="auth-sub">This page only works once. After this account is created, this page disables itself automatically for security.</p>
+
+    <form method="POST" class="form">
+      <label for="name">Admin Name</label>
+      <input type="text" id="name" name="name" placeholder="Your name" required>
+
+      <label for="email">Admin Email</label>
+      <input type="email" id="email" name="email" placeholder="admin@example.com" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="At least 6 characters" required minlength="6">
+
+      <button type="submit" class="btn btn-admin btn-block">Create Admin Account</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

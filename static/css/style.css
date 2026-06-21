@@ -1,20 +1,20 @@
 :root {
-  --ink: #1c2624;
-  --paper: #faf8f4;
+  --ink: #000000;
+  --paper: #ffffff;
   --paper-raised: #ffffff;
-  --line: #e2ddd2;
-  --teal: #2d6a63;
-  --teal-deep: #1f4d47;
-  --teal-tint: #e7f0ee;
-  --amber: #c9772f;
-  --amber-tint: #faf0e3;
-  --admin: #4a3f8c;
-  --admin-tint: #ece9f7;
-  --muted: #756f63;
-  --danger: #b8473c;
+  --line: #f0d9c4;
+  --teal: #e8631a;
+  --teal-deep: #c44f0f;
+  --teal-tint: #fdf0e6;
+  --amber: #e8631a;
+  --amber-tint: #fdf0e6;
+  --admin: #b8470f;
+  --admin-tint: #fbe9dd;
+  --muted: #5a5a5a;
+  --danger: #c0392b;
   --danger-tint: #fbeae8;
   --radius: 10px;
-  --serif: 'Iowan Old Style', 'Palatino Linotype', Georgia, 'Noto Nastaliq Urdu', serif;
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Noto Sans', Arial, sans-serif;
 }
 
@@ -196,7 +196,7 @@ h1, h2, h3 {
 .btn-primary:hover { background: var(--teal-deep); }
 
 .btn-admin { background: var(--admin); color: #fff; }
-.btn-admin:hover { background: #3a3170; }
+.btn-admin:hover { background: #8f3608; }
 
 .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
 .btn-ghost:hover { border-color: var(--muted); }
@@ -415,7 +415,7 @@ h1, h2, h3 {
   padding: 18px 20px;
 }
 
-.thread-msg-admin { background: var(--admin-tint); border-color: #d8d2ec; }
+.thread-msg-admin { background: var(--admin-tint); border-color: #f0c9a8; }
 .thread-msg-original { border-left: 3px solid var(--amber); }
 
 .thread-msg-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }

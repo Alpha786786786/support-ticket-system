@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ur" dir="ltr">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,8 +17,8 @@
         {% if current_is_admin() %}
           <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
         {% else %}
-          <a href="{{ url_for('student_dashboard') }}">Mere Tickets</a>
-          <a href="{{ url_for('new_ticket') }}" class="nav-cta">+ Naya Sawal</a>
+          <a href="{{ url_for('student_dashboard') }}">My Tickets</a>
+          <a href="{{ url_for('new_ticket') }}" class="nav-cta">+ New Question</a>
         {% endif %}
         <a href="{{ url_for('logout') }}" class="nav-logout">Logout</a>
       {% else %}
@@ -43,7 +43,7 @@
   </main>
 
   <footer class="footer">
-    <span>Support Desk &mdash; sawal poochein, jawab paayen.</span>
+    <span>Support Desk &mdash; ask a question, get an answer.</span>
   </footer>
 
 </body>

@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
-{% block title %}Mere Tickets — Support Desk{% endblock %}
+{% block title %}My Tickets — Support Desk{% endblock %}
 
 {% block content %}
 <section class="dash-head">
   <div>
-    <p class="eyebrow">Khush Amdeed, {{ current_user.name }}</p>
-    <h2>Mere Tickets</h2>
+    <p class="eyebrow">Welcome, {{ current_user.name }}</p>
+    <h2>My Tickets</h2>
   </div>
-  <a href="{{ url_for('new_ticket') }}" class="btn btn-primary">+ Naya Sawal</a>
+  <a href="{{ url_for('new_ticket') }}" class="btn btn-primary">+ New Question</a>
 </section>
 
 <div class="filter-row">
-  <a href="{{ url_for('student_dashboard', status='all') }}" class="filter-chip {{ 'active' if status_filter == 'all' }}">Tamam <span>{{ counts['all'] }}</span></a>
+  <a href="{{ url_for('student_dashboard', status='all') }}" class="filter-chip {{ 'active' if status_filter == 'all' }}">All <span>{{ counts['all'] }}</span></a>
   <a href="{{ url_for('student_dashboard', status='Open') }}" class="filter-chip {{ 'active' if status_filter == 'Open' }}">Open <span>{{ counts['Open'] }}</span></a>
   <a href="{{ url_for('student_dashboard', status='Answered') }}" class="filter-chip {{ 'active' if status_filter == 'Answered' }}">Answered <span>{{ counts['Answered'] }}</span></a>
   <a href="{{ url_for('student_dashboard', status='Closed') }}" class="filter-chip {{ 'active' if status_filter == 'Closed' }}">Closed <span>{{ counts['Closed'] }}</span></a>
@@ -38,9 +38,9 @@
   </div>
 {% else %}
   <div class="empty-state">
-    <p class="empty-title">Abhi tak koi ticket nahi hai</p>
-    <p class="empty-sub">Agar koi sawal hai to "Naya Sawal" par click karke poochein.</p>
-    <a href="{{ url_for('new_ticket') }}" class="btn btn-primary">+ Naya Sawal Poochein</a>
+    <p class="empty-title">No tickets yet</p>
+    <p class="empty-sub">If you have a question, click "New Question" to ask.</p>
+    <a href="{{ url_for('new_ticket') }}" class="btn btn-primary">+ Ask a New Question</a>
   </div>
 {% endif %}
 {% endblock %}

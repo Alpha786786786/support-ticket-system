@@ -1,37 +1,37 @@
 {% extends 'base.html' %}
-{% block title %}Support Desk — Sawal Poochein{% endblock %}
+{% block title %}Support Desk — Ask a Question{% endblock %}
 
 {% block content %}
 <section class="hero">
-  <p class="eyebrow">Talaba Support System</p>
-  <h1>Sawal poochein.<br>Jawab paayen.</h1>
-  <p class="hero-sub">Apna sawal yahan likhein — support team aap ko jald jawab degi. Pori guftugu yahin, ek jagah par mehfooz rehti hai.</p>
+  <p class="eyebrow">Student Support System</p>
+  <h1>Ask a question.<br>Get an answer.</h1>
+  <p class="hero-sub">Write your question here — the support team will get back to you soon. The whole conversation stays in one place, safely.</p>
 
   <div class="hero-actions">
-    <a href="{{ url_for('student_signup') }}" class="btn btn-primary">Student ke taur par shuru karein</a>
-    <a href="{{ url_for('student_login') }}" class="btn btn-ghost">Pehle se account hai? Login</a>
+    <a href="{{ url_for('student_signup') }}" class="btn btn-primary">Get started as a student</a>
+    <a href="{{ url_for('student_login') }}" class="btn btn-ghost">Already have an account? Log in</a>
   </div>
 
   <div class="hero-admin">
-    <a href="{{ url_for('admin_login') }}">Support team member hain? Admin login &rarr;</a>
+    <a href="{{ url_for('admin_login') }}">Are you a support team member? Admin login &rarr;</a>
   </div>
 </section>
 
 <section class="how-it-works">
   <div class="step">
     <span class="step-num">1</span>
-    <h3>Account banayein</h3>
-    <p>Apna naam aur email se chand second mein account banayein.</p>
+    <h3>Create an account</h3>
+    <p>Sign up with your name and email in a few seconds.</p>
   </div>
   <div class="step">
     <span class="step-num">2</span>
-    <h3>Sawal likhein</h3>
-    <p>Apna sawal ya masla tafseel se likh kar bhej dein.</p>
+    <h3>Write your question</h3>
+    <p>Describe your question or issue in detail and submit it.</p>
   </div>
   <div class="step">
     <span class="step-num">3</span>
-    <h3>Jawab paayen</h3>
-    <p>Support team jawab degi, aur aap ussi ticket mein aage baat kar saken ge.</p>
+    <h3>Get an answer</h3>
+    <p>The support team will reply, and you can continue the conversation on the same ticket.</p>
   </div>
 </section>
 {% endblock %}

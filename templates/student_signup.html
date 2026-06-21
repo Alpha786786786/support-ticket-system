@@ -1,27 +1,27 @@
 {% extends 'base.html' %}
-{% block title %}Account Banayein — Support Desk{% endblock %}
+{% block title %}Create Account — Support Desk{% endblock %}
 
 {% block content %}
 <section class="auth-wrap">
   <div class="auth-card">
     <p class="eyebrow">Student</p>
-    <h2>Naya account banayein</h2>
-    <p class="auth-sub">Sawal poochne ke liye account zaroori hai.</p>
+    <h2>Create a new account</h2>
+    <p class="auth-sub">You need an account to ask a question.</p>
 
     <form method="POST" class="form">
-      <label for="name">Naam</label>
-      <input type="text" id="name" name="name" placeholder="Aap ka pura naam" required>
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" placeholder="Your full name" required>
 
       <label for="email">Email</label>
-      <input type="email" id="email" name="email" placeholder="aap@example.com" required>
+      <input type="email" id="email" name="email" placeholder="you@example.com" required>
 
       <label for="password">Password</label>
-      <input type="password" id="password" name="password" placeholder="Kam az kam 6 characters" required minlength="6">
+      <input type="password" id="password" name="password" placeholder="At least 6 characters" required minlength="6">
 
-      <button type="submit" class="btn btn-primary btn-block">Account Banayein</button>
+      <button type="submit" class="btn btn-primary btn-block">Create Account</button>
     </form>
 
-    <p class="auth-switch">Pehle se account hai? <a href="{{ url_for('student_login') }}">Login karein</a></p>
+    <p class="auth-switch">Already have an account? <a href="{{ url_for('student_login') }}">Log in</a></p>
   </div>
 </section>
 {% endblock %}

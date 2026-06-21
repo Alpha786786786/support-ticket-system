@@ -1,27 +1,27 @@
 {% extends 'base.html' %}
-{% block title %}Naya Sawal — Support Desk{% endblock %}
+{% block title %}New Question — Support Desk{% endblock %}
 
 {% block content %}
 <section class="auth-wrap">
   <div class="auth-card form-card-wide">
-    <p class="eyebrow">Naya Sawal</p>
-    <h2>Apna sawal likhein</h2>
-    <p class="auth-sub">Jitni tafseel dengay, utna behtar aur jald jawab milay ga.</p>
+    <p class="eyebrow">New Question</p>
+    <h2>Write your question</h2>
+    <p class="auth-sub">The more detail you give, the faster and better the answer will be.</p>
 
     <form method="POST" class="form">
       <label for="subject">Subject</label>
-      <input type="text" id="subject" name="subject" placeholder="Misal: Fee jama karwane mein masla" required>
+      <input type="text" id="subject" name="subject" placeholder="Example: Issue submitting fee payment" required>
 
-      <label for="priority">Ahmiyat</label>
+      <label for="priority">Priority</label>
       <select id="priority" name="priority">
         <option value="Normal" selected>Normal</option>
         <option value="Urgent">Urgent</option>
       </select>
 
-      <label for="message">Sawal / Tafseel</label>
-      <textarea id="message" name="message" rows="6" placeholder="Apna sawal yahan tafseel se likhein..." required></textarea>
+      <label for="message">Question / Details</label>
+      <textarea id="message" name="message" rows="6" placeholder="Describe your question in detail here..." required></textarea>
 
-      <button type="submit" class="btn btn-primary btn-block">Sawal Bhejein</button>
+      <button type="submit" class="btn btn-primary btn-block">Submit Question</button>
     </form>
   </div>
 </section>

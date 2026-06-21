@@ -4,7 +4,7 @@
 {% block content %}
 <section class="ticket-detail">
 
-  <a href="{{ url_for('admin_dashboard') if is_admin else url_for('student_dashboard') }}" class="back-link">&larr; Wapas</a>
+  <a href="{{ url_for('admin_dashboard') if is_admin else url_for('student_dashboard') }}" class="back-link">&larr; Back</a>
 
   <div class="ticket-header">
     <div>
@@ -15,18 +15,18 @@
       <h2>{{ ticket.subject }}</h2>
       <p class="ticket-header-meta">
         {% if is_admin %}{{ ticket.student.name }} ({{ ticket.student.email }}) &middot; {% endif %}
-        Shuru hua: {{ ticket.created_at.strftime('%d %b %Y, %I:%M %p') }}
+        Started: {{ ticket.created_at.strftime('%d %b %Y, %I:%M %p') }}
       </p>
     </div>
 
     <div class="ticket-header-actions">
       {% if ticket.status != 'Closed' %}
         <form method="POST" action="{{ url_for('close_ticket', ticket_id=ticket.id) }}">
-          <button type="submit" class="btn btn-ghost btn-small">Ticket Band Karein</button>
+          <button type="submit" class="btn btn-ghost btn-small">Close Ticket</button>
         </form>
       {% else %}
         <form method="POST" action="{{ url_for('reopen_ticket', ticket_id=ticket.id) }}">
-          <button type="submit" class="btn btn-ghost btn-small">Dobara Kholein</button>
+          <button type="submit" class="btn btn-ghost btn-small">Reopen</button>
         </form>
       {% endif %}
     </div>
@@ -60,14 +60,14 @@
 
   {% if ticket.status != 'Closed' %}
     <form method="POST" class="reply-form">
-      <label for="message">{{ 'Jawab likhein' if is_admin else 'Aur kuch poochna hai?' }}</label>
-      <textarea id="message" name="message" rows="4" placeholder="{{ 'Apna jawab yahan likhein...' if is_admin else 'Apna paigham yahan likhein...' }}" required></textarea>
+      <label for="message">{{ 'Write a reply' if is_admin else 'Anything else to ask?' }}</label>
+      <textarea id="message" name="message" rows="4" placeholder="{{ 'Write your reply here...' if is_admin else 'Write your message here...' }}" required></textarea>
       <button type="submit" class="btn {{ 'btn-admin' if is_admin else 'btn-primary' }}">
-        {{ 'Jawab Bhejein' if is_admin else 'Bhejein' }}
+        {{ 'Send Reply' if is_admin else 'Send' }}
       </button>
     </form>
   {% else %}
-    <p class="closed-note">Ye ticket band ho chuka hai. Agar dobara baat karni ho to "Dobara Kholein" par click karein.</p>
+    <p class="closed-note">This ticket is closed. Click "Reopen" if you need to continue the conversation.</p>
   {% endif %}
 
 </section>

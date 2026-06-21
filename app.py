@@ -21,7 +21,7 @@ db = SQLAlchemy(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'student_login'
-login_manager.login_message = 'Pehle login karein.'
+login_manager.login_message = 'Please log in first.'
 login_manager.login_message_category = 'error'
 
 # ---------------------------------------------------------------------------
@@ -152,15 +152,15 @@ def student_signup():
         password = request.form.get('password', '')
 
         if not name or not email or not password:
-            flash('Tamam fields bharna zaroori hai.', 'error')
+            flash('Please fill in all fields.', 'error')
             return render_template('student_signup.html')
 
         if len(password) < 6:
-            flash('Password kam az kam 6 characters ka hona chahiye.', 'error')
+            flash('Password must be at least 6 characters.', 'error')
             return render_template('student_signup.html')
 
         if User.query.filter_by(email=email).first():
-            flash('Is email se pehle ek account mojood hai. Login karein.', 'error')
+            flash('An account with this email already exists. Please log in.', 'error')
             return render_template('student_signup.html')
 
         user = User(name=name, email=email)
@@ -169,7 +169,7 @@ def student_signup():
         db.session.commit()
 
         login_user(user)
-        flash('Khush amdeed! Aapka account ban gaya hai.', 'success')
+        flash('Welcome! Your account has been created.', 'success')
         return redirect(url_for('student_dashboard'))
 
     return render_template('student_signup.html')
@@ -189,7 +189,7 @@ def student_login():
             login_user(user)
             return redirect(url_for('student_dashboard'))
 
-        flash('Email ya password ghalat hai.', 'error')
+        flash('Incorrect email or password.', 'error')
 
     return render_template('student_login.html')
 
@@ -212,7 +212,7 @@ def admin_login():
             login_user(admin)
             return redirect(url_for('admin_dashboard'))
 
-        flash('Email ya password ghalat hai.', 'error')
+        flash('Incorrect email or password.', 'error')
 
     return render_template('admin_login.html')
 
@@ -262,7 +262,7 @@ def new_ticket():
         priority = request.form.get('priority', 'Normal')
 
         if not subject or not message:
-            flash('Subject aur sawal likhna zaroori hai.', 'error')
+            flash('Please write a subject and your question.', 'error')
             return render_template('new_ticket.html')
 
         ticket = Ticket(
@@ -274,7 +274,7 @@ def new_ticket():
         )
         db.session.add(ticket)
         db.session.commit()
-        flash('Aapka sawal bhej diya gaya hai. Jald hi jawab milega.', 'success')
+        flash('Your question has been submitted. You will get a reply soon.', 'success')
         return redirect(url_for('view_ticket', ticket_id=ticket.id))
 
     return render_template('new_ticket.html')
@@ -303,7 +303,7 @@ def view_ticket(ticket_id):
             ticket.updated_at = datetime.utcnow()
             db.session.add(reply)
             db.session.commit()
-            flash('Reply bhej diya gaya.', 'success')
+            flash('Reply sent.', 'success')
         return redirect(url_for('view_ticket', ticket_id=ticket.id))
 
     return render_template('view_ticket.html', ticket=ticket, is_admin=is_admin)
@@ -319,7 +319,7 @@ def close_ticket(ticket_id):
     ticket.status = 'Closed'
     ticket.updated_at = datetime.utcnow()
     db.session.commit()
-    flash('Ticket band kar diya gaya.', 'success')
+    flash('Ticket closed.', 'success')
     return redirect(url_for('view_ticket', ticket_id=ticket.id))
 
 
@@ -333,7 +333,7 @@ def reopen_ticket(ticket_id):
     ticket.status = 'Open'
     ticket.updated_at = datetime.utcnow()
     db.session.commit()
-    flash('Ticket dobara khol diya gaya.', 'success')
+    flash('Ticket reopened.', 'success')
     return redirect(url_for('view_ticket', ticket_id=ticket.id))
 
 
@@ -369,12 +369,12 @@ def admin_dashboard():
 
 @app.errorhandler(403)
 def forbidden(e):
-    return render_template('error.html', code=403, message='Aapko is page tak rasai nahi hai.'), 403
+    return render_template('error.html', code=403, message='You do not have access to this page.'), 403
 
 
 @app.errorhandler(404)
 def not_found(e):
-    return render_template('error.html', code=404, message='Ye page mojood nahi hai.'), 404
+    return render_template('error.html', code=404, message='This page does not exist.'), 404
 
 
 # ---------------------------------------------------------------------------
@@ -385,19 +385,19 @@ def not_found(e):
 def create_admin():
     """Usage: flask --app app.py create-admin"""
     import getpass
-    name = input('Admin ka naam: ').strip()
-    email = input('Admin ka email: ').strip().lower()
+    name = input('Admin name: ').strip()
+    email = input('Admin email: ').strip().lower()
     password = getpass.getpass('Password: ')
 
     if Admin.query.filter_by(email=email).first():
-        print('Is email se admin pehle se mojood hai.')
+        print('An admin with this email already exists.')
         return
 
     admin = Admin(name=name, email=email)
     admin.set_password(password)
     db.session.add(admin)
     db.session.commit()
-    print(f'Admin "{name}" ban gaya hai.')
+    print(f'Admin "{name}" has been created.')
 
 
 with app.app_context():

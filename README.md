@@ -8,10 +8,15 @@ jawab dete hain**. Dono ka login alag hai aur har taraf apna data mehfooz hai.
 - Student signup/login — apna account khud banayen
 - Student naya ticket (sawal) bana sakta hai, Normal ya Urgent priority k saath
 - Student apni purani tickets dekh sakta hai aur unhi mein reply kar sakta hai
+- Student apna **password khud badal sakta hai** (email change nahi ho sakta — security k liye)
 - Admin login — sab tickets ek jagah dekhe (Open / Answered / Closed filter k saath)
 - Admin har ticket par reply de sakta hai — reply dete hi status khud "Answered" ho jata hai
+- Admin **Students** page se kisi bhi student ka email/naam dekh kar uska **password reset** kar sakta hai
+- Ticket aur reply dono mein **file attach** kar sakte hain (image, PDF, Word doc, etc — 10MB tak)
+- Ticket aur reply dono mein **voice note record** kar sakte hain (seedha browser se microphone use kar k)
 - Ticket band (Closed) aur dobara khol (Reopen) karne ka option, dono taraf se
 - Har data real database (SQLite) mein permanently save hota hai
+- Ek **guaranteed default admin account** khud-ba-khud ban jata hai jab app pehli dafa chalta hai (neeche dekhein)
 
 ## Files ka khaka
 
@@ -34,17 +39,20 @@ python3 app.py
 
 Phir browser mein `http://localhost:5000` kholein.
 
-## Admin account kaise banayen
+## Admin account kaise milega
 
-Student to khud signup kar sakta hai, lekin **admin account security wajah se command line
-se banta hai** taake koi bhi khud ko admin na bana le.
+Render k free plan mein "Shell" access nahi hota, is liye admin account **khud-ba-khud** ban jata hai jab app pehli dafa start hoti hai. Default details ye hain:
+
+```
+Email:    admin@supportdesk.com
+Password: Admin@12345
+```
+
+**Zaroori:** Login hone k baad turant `/admin/students` se ya code mein change kar k password badal lein, taake koi aur is fix password se login na kar sake. Agar future mein aap k paas Shell access ho (paid Render plan ya kisi aur host par), to ye command se bhi naya admin bana sakte hain:
 
 ```bash
 flask --app app.py create-admin
 ```
-
-Ye aap se naam, email, aur password puchega. Bus — ab usi email/password se
-`/admin/login` page se login ho jayega.
 
 ## Website par live kaise lagayen
 

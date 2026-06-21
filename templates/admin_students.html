@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Students — Support Desk{% endblock %}
+
+{% block content %}
+<section class="dash-head">
+  <div>
+    <p class="eyebrow eyebrow-admin">Account Management</p>
+    <h2>Students</h2>
+  </div>
+</section>
+
+<form method="GET" class="search-row">
+  <input type="text" name="q" value="{{ search }}" placeholder="Search by name or email..." class="search-input">
+  <button type="submit" class="btn btn-ghost btn-small">Search</button>
+</form>
+
+{% if students %}
+  <div class="student-list">
+    {% for s in students %}
+      <div class="student-row">
+        <div class="student-row-main">
+          <span class="thread-avatar">{{ s.name[0]|upper }}</span>
+          <div>
+            <p class="ticket-subject">{{ s.name }}</p>
+            <p class="ticket-snippet">{{ s.email }}</p>
+          </div>
+        </div>
+        <details class="reset-details">
+          <summary class="btn btn-ghost btn-small">Reset Password</summary>
+          <form method="POST" action="{{ url_for('admin_reset_password', student_id=s.id) }}" class="reset-form">
+            <input type="password" name="new_password" placeholder="New password (min 6 chars)" minlength="6" required>
+            <button type="submit" class="btn btn-admin btn-small">Confirm Reset</button>
+            <p class="reset-note">Share this new password with the student yourself — they will use it with their existing email to log in.</p>
+          </form>
+        </details>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <p class="empty-title">No students found</p>
+  </div>
+{% endif %}
+{% endblock %}

@@ -8,7 +8,7 @@
     <h2>Write your question</h2>
     <p class="auth-sub">The more detail you give, the faster and better the answer will be.</p>
 
-    <form method="POST" class="form">
+    <form method="POST" class="form" enctype="multipart/form-data">
       <label for="subject">Subject</label>
       <input type="text" id="subject" name="subject" placeholder="Example: Issue submitting fee payment" required>
 
@@ -21,8 +21,71 @@
       <label for="message">Question / Details</label>
       <textarea id="message" name="message" rows="6" placeholder="Describe your question in detail here..." required></textarea>
 
+      <label for="attachment">Attach a file (optional)</label>
+      <input type="file" id="attachment" name="attachment" class="file-input">
+      <p class="field-hint">Images, PDF, Word docs — up to 10 MB.</p>
+
+      <label>Or record a voice note (optional)</label>
+      <div id="voice-recorder" class="voice-recorder">
+        <button type="button" id="record-btn" class="btn btn-ghost btn-small">🎙️ Start Recording</button>
+        <span id="record-status" class="record-status"></span>
+        <audio id="voice-preview" class="voice-preview" controls style="display:none;"></audio>
+        <input type="hidden" id="voice_note_flag" name="has_voice" value="">
+      </div>
+
       <button type="submit" class="btn btn-primary btn-block">Submit Question</button>
     </form>
   </div>
 </section>
+
+<script>
+(function() {
+  const recordBtn = document.getElementById('record-btn');
+  const statusEl = document.getElementById('record-status');
+  const preview = document.getElementById('voice-preview');
+  const form = document.querySelector('form');
+  let mediaRecorder, chunks = [], stream;
+
+  recordBtn.addEventListener('click', async function() {
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        chunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.onstop = function() {
+          const blob = new Blob(chunks, { type: 'audio/webm' });
+          preview.src = URL.createObjectURL(blob);
+          preview.style.display = 'block';
+
+          const dt = new DataTransfer();
+          const file = new File([blob], 'voice-note.webm', { type: 'audio/webm' });
+          dt.items.add(file);
+
+          let voiceInput = document.getElementById('voice_note');
+          if (!voiceInput) {
+            voiceInput = document.createElement('input');
+            voiceInput.type = 'file';
+            voiceInput.id = 'voice_note';
+            voiceInput.name = 'voice_note';
+            voiceInput.style.display = 'none';
+            form.appendChild(voiceInput);
+          }
+          voiceInput.files = dt.files;
+          stream.getTracks().forEach(t => t.stop());
+        };
+        mediaRecorder.start();
+        recordBtn.textContent = '⏹️ Stop Recording';
+        statusEl.textContent = 'Recording...';
+      } catch (err) {
+        statusEl.textContent = 'Microphone access denied or unavailable.';
+      }
+    } else {
+      mediaRecorder.stop();
+      recordBtn.textContent = '🎙️ Start Recording';
+      statusEl.textContent = 'Recorded.';
+    }
+  });
+})();
+</script>
 {% endblock %}

@@ -7,6 +7,8 @@ from flask_login import (
     login_required, current_user
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+import uuid
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -14,8 +16,17 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'change-this-secret-key-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'tickets.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'instance', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB max per upload
+
+ALLOWED_EXTENSIONS = {
+    'png', 'jpg', 'jpeg', 'gif', 'webp',
+    'pdf', 'doc', 'docx', 'txt',
+    'mp3', 'wav', 'm4a', 'ogg', 'webm'
+}
 
 os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
 
@@ -75,6 +86,10 @@ class Ticket(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    attachment_filename = db.Column(db.String(255), nullable=True)
+    attachment_original_name = db.Column(db.String(255), nullable=True)
+    attachment_type = db.Column(db.String(20), nullable=True)  # 'file' or 'voice'
+
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     replies = db.relationship('Reply', backref='ticket', lazy=True,
                                cascade='all, delete-orphan', order_by='Reply.created_at')
@@ -84,6 +99,11 @@ class Reply(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Attachment (optional) — file or voice note
+    attachment_filename = db.Column(db.String(255), nullable=True)   # stored name on disk
+    attachment_original_name = db.Column(db.String(255), nullable=True)  # name to show the user
+    attachment_type = db.Column(db.String(20), nullable=True)  # 'file' or 'voice'
 
     ticket_id = db.Column(db.Integer, db.ForeignKey('ticket.id'), nullable=False)
 
@@ -122,6 +142,28 @@ def current_is_admin():
 
 
 app.jinja_env.globals.update(current_is_admin=current_is_admin)
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def save_upload(file_storage, kind='file'):
+    """Saves an uploaded file (or voice blob) to disk and returns (stored_name, original_name, kind), or None."""
+    if not file_storage or file_storage.filename == '':
+        return None
+
+    original_name = secure_filename(file_storage.filename) or f"{kind}.bin"
+    ext = original_name.rsplit('.', 1)[1].lower() if '.' in original_name else ''
+
+    if kind == 'file' and ext not in ALLOWED_EXTENSIONS:
+        return None
+    if kind == 'voice' and ext not in {'webm', 'ogg', 'mp3', 'wav', 'm4a'}:
+        return None
+
+    stored_name = f"{uuid.uuid4().hex}_{original_name}"
+    file_storage.save(os.path.join(app.config['UPLOAD_FOLDER'], stored_name))
+    return stored_name, original_name, kind
 
 
 # ---------------------------------------------------------------------------
@@ -272,6 +314,25 @@ def new_ticket():
             student_id=current_user.id,
             status='Open'
         )
+
+        # Optional file attachment
+        upload = request.files.get('attachment')
+        if upload and upload.filename:
+            saved = save_upload(upload, kind='file')
+            if saved:
+                ticket.attachment_filename, ticket.attachment_original_name, ticket.attachment_type = saved
+            else:
+                flash('That file type is not supported, so it was not attached.', 'error')
+
+        # Optional voice note
+        voice = request.files.get('voice_note')
+        if voice and voice.filename:
+            saved = save_upload(voice, kind='voice')
+            if saved:
+                # Voice note takes priority slot if no file was attached; otherwise it's saved on first reply instead
+                if not ticket.attachment_filename:
+                    ticket.attachment_filename, ticket.attachment_original_name, ticket.attachment_type = saved
+
         db.session.add(ticket)
         db.session.commit()
         flash('Your question has been submitted. You will get a reply soon.', 'success')
@@ -291,8 +352,25 @@ def view_ticket(ticket_id):
 
     if request.method == 'POST':
         message = request.form.get('message', '').strip()
-        if message:
-            reply = Reply(message=message, ticket_id=ticket.id)
+        upload = request.files.get('attachment')
+        voice = request.files.get('voice_note')
+
+        has_attachment = (upload and upload.filename) or (voice and voice.filename)
+
+        if message or has_attachment:
+            reply = Reply(message=message or '(attachment)', ticket_id=ticket.id)
+
+            if upload and upload.filename:
+                saved = save_upload(upload, kind='file')
+                if saved:
+                    reply.attachment_filename, reply.attachment_original_name, reply.attachment_type = saved
+                else:
+                    flash('That file type is not supported, so it was not attached.', 'error')
+            elif voice and voice.filename:
+                saved = save_upload(voice, kind='voice')
+                if saved:
+                    reply.attachment_filename, reply.attachment_original_name, reply.attachment_type = saved
+
             if is_admin:
                 reply.author_admin_id = current_user.id
                 ticket.status = 'Answered'
@@ -337,6 +415,64 @@ def reopen_ticket(ticket_id):
     return redirect(url_for('view_ticket', ticket_id=ticket.id))
 
 
+@app.route('/attachment/<path:stored_filename>')
+@login_required
+def download_attachment(stored_filename):
+    from flask import send_from_directory
+
+    is_admin = current_is_admin()
+
+    # Find which ticket or reply this attachment belongs to, to check access rights
+    ticket = Ticket.query.filter_by(attachment_filename=stored_filename).first()
+    reply = None
+    if not ticket:
+        reply = Reply.query.filter_by(attachment_filename=stored_filename).first()
+        ticket = reply.ticket if reply else None
+
+    if not ticket:
+        abort(404)
+
+    if not is_admin and ticket.student_id != current_user.id:
+        abort(403)
+
+    original_name = ticket.attachment_original_name if not reply else reply.attachment_original_name
+    return send_from_directory(
+        app.config['UPLOAD_FOLDER'], stored_filename,
+        as_attachment=False, download_name=original_name
+    )
+
+
+@app.route('/account/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    if current_is_admin():
+        abort(403)
+
+    if request.method == 'POST':
+        current_password = request.form.get('current_password', '')
+        new_password = request.form.get('new_password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if not current_user.check_password(current_password):
+            flash('Your current password is incorrect.', 'error')
+            return render_template('change_password.html')
+
+        if len(new_password) < 6:
+            flash('New password must be at least 6 characters.', 'error')
+            return render_template('change_password.html')
+
+        if new_password != confirm_password:
+            flash('New password and confirmation do not match.', 'error')
+            return render_template('change_password.html')
+
+        current_user.set_password(new_password)
+        db.session.commit()
+        flash('Your password has been updated.', 'success')
+        return redirect(url_for('student_dashboard'))
+
+    return render_template('change_password.html')
+
+
 # ---------------------------------------------------------------------------
 # Admin area
 # ---------------------------------------------------------------------------
@@ -361,6 +497,42 @@ def admin_dashboard():
     }
 
     return render_template('admin_dashboard.html', tickets=tickets, status_filter=status_filter, counts=counts)
+
+
+@app.route('/admin/students')
+@login_required
+def admin_students():
+    if not current_is_admin():
+        abort(403)
+
+    search = request.args.get('q', '').strip()
+    query = User.query
+    if search:
+        query = query.filter(
+            db.or_(User.name.ilike(f'%{search}%'), User.email.ilike(f'%{search}%'))
+        )
+    students = query.order_by(User.name.asc()).all()
+
+    return render_template('admin_students.html', students=students, search=search)
+
+
+@app.route('/admin/students/<int:student_id>/reset-password', methods=['POST'])
+@login_required
+def admin_reset_password(student_id):
+    if not current_is_admin():
+        abort(403)
+
+    student = User.query.get_or_404(student_id)
+    new_password = request.form.get('new_password', '')
+
+    if len(new_password) < 6:
+        flash('New password must be at least 6 characters.', 'error')
+        return redirect(url_for('admin_students'))
+
+    student.set_password(new_password)
+    db.session.commit()
+    flash(f'Password reset for {student.name} ({student.email}). Share the new password with them securely.', 'success')
+    return redirect(url_for('admin_students'))
 
 
 # ---------------------------------------------------------------------------
@@ -440,6 +612,18 @@ def create_admin():
 
 with app.app_context():
     db.create_all()
+
+    # Guaranteed admin account — created automatically on first startup.
+    # This does not depend on Shell access or any setup page.
+    DEFAULT_ADMIN_EMAIL = 'admin@supportdesk.com'
+    DEFAULT_ADMIN_PASSWORD = 'Admin@12345'
+
+    if not Admin.query.filter_by(email=DEFAULT_ADMIN_EMAIL).first():
+        default_admin = Admin(name='Support Admin', email=DEFAULT_ADMIN_EMAIL)
+        default_admin.set_password(DEFAULT_ADMIN_PASSWORD)
+        db.session.add(default_admin)
+        db.session.commit()
+        print(f'Default admin created: {DEFAULT_ADMIN_EMAIL}')
 
 
 if __name__ == '__main__':

@@ -42,6 +42,15 @@
         </div>
       </div>
       <p class="thread-body">{{ ticket.message }}</p>
+      {% if ticket.attachment_filename %}
+        <div class="attachment-box">
+          {% if ticket.attachment_type == 'voice' %}
+            <audio controls src="{{ url_for('download_attachment', stored_filename=ticket.attachment_filename) }}"></audio>
+          {% else %}
+            <a href="{{ url_for('download_attachment', stored_filename=ticket.attachment_filename) }}" target="_blank" class="attachment-link">📎 {{ ticket.attachment_original_name }}</a>
+          {% endif %}
+        </div>
+      {% endif %}
     </div>
 
     {% for r in ticket.replies %}
@@ -54,18 +63,88 @@
           </div>
         </div>
         <p class="thread-body">{{ r.message }}</p>
+        {% if r.attachment_filename %}
+          <div class="attachment-box">
+            {% if r.attachment_type == 'voice' %}
+              <audio controls src="{{ url_for('download_attachment', stored_filename=r.attachment_filename) }}"></audio>
+            {% else %}
+              <a href="{{ url_for('download_attachment', stored_filename=r.attachment_filename) }}" target="_blank" class="attachment-link">📎 {{ r.attachment_original_name }}</a>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
     {% endfor %}
   </div>
 
   {% if ticket.status != 'Closed' %}
-    <form method="POST" class="reply-form">
+    <form method="POST" class="reply-form" enctype="multipart/form-data">
       <label for="message">{{ 'Write a reply' if is_admin else 'Anything else to ask?' }}</label>
-      <textarea id="message" name="message" rows="4" placeholder="{{ 'Write your reply here...' if is_admin else 'Write your message here...' }}" required></textarea>
+      <textarea id="message" name="message" rows="4" placeholder="{{ 'Write your reply here...' if is_admin else 'Write your message here...' }}"></textarea>
+
+      <label for="attachment" class="small-label">Attach a file (optional)</label>
+      <input type="file" id="attachment" name="attachment" class="file-input">
+
+      <div id="voice-recorder" class="voice-recorder">
+        <button type="button" id="record-btn" class="btn btn-ghost btn-small">🎙️ Record Voice Note</button>
+        <span id="record-status" class="record-status"></span>
+        <audio id="voice-preview" class="voice-preview" controls style="display:none;"></audio>
+      </div>
+
       <button type="submit" class="btn {{ 'btn-admin' if is_admin else 'btn-primary' }}">
         {{ 'Send Reply' if is_admin else 'Send' }}
       </button>
     </form>
+
+    <script>
+    (function() {
+      const recordBtn = document.getElementById('record-btn');
+      const statusEl = document.getElementById('record-status');
+      const preview = document.getElementById('voice-preview');
+      const form = document.querySelector('.reply-form');
+      let mediaRecorder, chunks = [], stream;
+
+      recordBtn.addEventListener('click', async function() {
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            chunks = [];
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = function() {
+              const blob = new Blob(chunks, { type: 'audio/webm' });
+              preview.src = URL.createObjectURL(blob);
+              preview.style.display = 'block';
+
+              const dt = new DataTransfer();
+              const file = new File([blob], 'voice-note.webm', { type: 'audio/webm' });
+              dt.items.add(file);
+
+              let voiceInput = document.getElementById('voice_note');
+              if (!voiceInput) {
+                voiceInput = document.createElement('input');
+                voiceInput.type = 'file';
+                voiceInput.id = 'voice_note';
+                voiceInput.name = 'voice_note';
+                voiceInput.style.display = 'none';
+                form.appendChild(voiceInput);
+              }
+              voiceInput.files = dt.files;
+              stream.getTracks().forEach(t => t.stop());
+            };
+            mediaRecorder.start();
+            recordBtn.textContent = '⏹️ Stop Recording';
+            statusEl.textContent = 'Recording...';
+          } catch (err) {
+            statusEl.textContent = 'Microphone access denied or unavailable.';
+          }
+        } else {
+          mediaRecorder.stop();
+          recordBtn.textContent = '🎙️ Record Voice Note';
+          statusEl.textContent = 'Recorded.';
+        }
+      });
+    })();
+    </script>
   {% else %}
     <p class="closed-note">This ticket is closed. Click "Reopen" if you need to continue the conversation.</p>
   {% endif %}
